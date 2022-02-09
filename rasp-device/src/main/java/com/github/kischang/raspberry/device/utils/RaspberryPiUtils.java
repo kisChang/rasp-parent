@@ -1,6 +1,7 @@
 package com.github.kischang.raspberry.device.utils;
 
 import com.pi4j.io.gpio.*;
+import com.pi4j.io.gpio.event.GpioPinListenerDigital;
 
 /**
  * 树莓派工具类
@@ -9,6 +10,25 @@ import com.pi4j.io.gpio.*;
  * @version 1.0
  */
 public class RaspberryPiUtils {
+
+    public static interface KeyParse {
+        void onPress();
+    }
+
+    public static void onPress(int ioAddr, KeyParse keyParse) {
+        GpioController gpio = GpioFactory.getInstance();
+        GpioPinDigitalInput resetPin = gpio.provisionDigitalInputPin(
+                RaspiPin.getPinByAddress(ioAddr), PinPullResistance.PULL_DOWN);
+        resetPin.setShutdownOptions(true);
+        resetPin.addListener((GpioPinListenerDigital) event -> {
+            if (event.getState() == PinState.HIGH) {
+                keyParse.onPress();
+            }
+        });
+        if (gpio.getState(resetPin) == PinState.HIGH) { //已经按下了
+            keyParse.onPress();
+        }
+    }
 
     public static GpioPinDigitalInput getKeyGpio(GpioController gpio, int address) {
         GpioPinDigitalInput inTemp = gpio.provisionDigitalInputPin(RaspiPin.getPinByAddress(address), PinPullResistance.PULL_UP);
