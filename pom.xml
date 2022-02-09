@@ -7,7 +7,7 @@
     <groupId>com.github.kischang.raspberry</groupId>
     <artifactId>rasp-parent</artifactId>
     <packaging>pom</packaging>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.2-SNAPSHOT</version>
     <modules>
         <module>rasp-utils</module>
         <module>rasp-device</module>
@@ -148,12 +148,12 @@
 
     <distributionManagement>
         <repository>
-            <id>ossrh-rele</id>
+            <id>ossrh</id>
             <name>Nexus Release Repository</name>
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
         </repository>
         <snapshotRepository>
-            <id>ossrh-snap</id>
+            <id>ossrh</id>
             <name>Nexus Snapshot Repository</name>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
