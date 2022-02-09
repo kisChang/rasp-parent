@@ -21,9 +21,6 @@ import java.util.Random;
  */
 public class RaspWiFiUtils {
 
-    //随机AP名称
-    private static final String AP_NAME = randStr("ABCDEFGHIJKLMNOPQRSTUVWXYZ", 4);
-
     /**
      * 尝试连接WiFi
      * 依赖： iwconf dhcpcd
@@ -319,13 +316,13 @@ public class RaspWiFiUtils {
             "# create hostapd.conf\n" +
             "echo \"interface=wlan0\n" +
             "driver=nl80211\n" +
-            "ssid=ZK_FB_%s\n" +
+            "ssid=%s\n" +
             "channel=7\" >/tmp/hostapd.conf\n" +
             "\n" +
             "# start hostapd\n" +
             "hostapd /tmp/hostapd.conf"
             ;
-    public static void startApMode() {
+    public static void startApMode(String ssid) {
         /*
         启动热点，SSID： ZK_FB_ABCD  pwd：开放
         sudo hostapd hostapd.conf
@@ -334,7 +331,7 @@ public class RaspWiFiUtils {
         sudo dnsmasq.sh
         */
         try (OutputStream out = new FileOutputStream("/tmp/hostapd.sh")){
-            IOUtils.write(String.format(shell_hostapd, AP_NAME), out, StandardCharsets.UTF_8);
+            IOUtils.write(String.format(shell_hostapd, ssid), out, StandardCharsets.UTF_8);
         } catch (Exception ignored) {}
         CommandDaemon rv_hostapd = RaspCmdUtils.runCmdDaemon("/bin/sh /tmp/hostapd.sh", "hostapd");
         //System.out.println("hostapd >>" + rv.getOutStr());
@@ -352,7 +349,9 @@ public class RaspWiFiUtils {
         } catch (InterruptedException ignored) {}
     }
 
-
+    public static String randStr(int len) {
+        return randStr("ABCDEFGHIJKLMNOPQRSTUVWXYZ", len);
+    }
     public static String randStr(String tmp, int len) {
         Random random = new Random();
         StringBuilder sb = new StringBuilder();
