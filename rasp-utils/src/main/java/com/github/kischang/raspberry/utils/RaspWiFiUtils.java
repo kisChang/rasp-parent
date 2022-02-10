@@ -39,7 +39,8 @@ public class RaspWiFiUtils {
                 "rm -rf /var/run/udhcpc.eth0.pid \n" +
                 "rm -rf /var/run/udhcpc.wlan0.pid \n" +
                 // 重启
-                "rc-service networking restart \n"
+                "rc-service networking restart \n" +
+                "rc-service avahi-daemon restart \n"
                 , ssid, key, wpa_supplicantConfPath);
 
         CommandDaemon testRv = runSh(shell_connWifi, "conn_wifi_sys");
@@ -87,7 +88,8 @@ public class RaspWiFiUtils {
                 "fi \n" +
                 "rm -rf /var/run/udhcpc.wlan0.pid \n" +
                 "HOST_NAME=$(hostname) \n" +
-                "udhcpc -b -R -p -p /var/run/udhcpc.wlan0.pid -i %s -x hostname:${HOST_NAME} \n"
+                "udhcpc -b -R -p -p /var/run/udhcpc.wlan0.pid -i %s -x hostname:${HOST_NAME} \n" +
+                "rc-service avahi-daemon restart \n"
 //                "udhcpc -n -i %s -x hostname ${HOST_NAME} -p /var/run/udhcpc.wlan0.pid \n"
                 , devName, devName, ssid, key, path, path, devName);
 
