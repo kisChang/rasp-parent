@@ -22,6 +22,31 @@ import java.util.Random;
 public class RaspWiFiUtils {
 
     /**
+     * 按系统配置文件写入并重启服务
+     * @param ssid  wifi ssid
+     * @param key   wifi密码
+     * @param path  系统配置文件路径
+     * @return
+     */
+    public static boolean connWiFiBySys(String ssid, String key, String path) {
+        String shell_connWifi = String.format(
+                "#!/bin/sh\n" +
+                // 强行结束部分进程，确保后续重启没有问题
+                "ps aux | grep wpa_supplicant | awk '{print $1}' | xargs kill -9 \n" +
+                "ps aux | grep udhcpc | awk '{print $1}' | xargs kill -9 \n" +
+                // 写入配置文件
+                "wpa_passphrase %s '%s' > %s/wpa_supplicant.conf\n" +
+                "rm -rf /var/run/udhcpc.eth0.pid \n" +
+                "rm -rf /var/run/udhcpc.wlan0.pid \n" +
+                // 重启
+                "rc-service networking restart \n"
+                , ssid, key, path);
+
+        CommandDaemon testRv = runSh(shell_connWifi, "conn_wifi_sys");
+        return true;
+    }
+
+    /**
      * 尝试连接WiFi
      * 依赖： iwconf dhcpcd
      * 命令：
@@ -71,13 +96,7 @@ public class RaspWiFiUtils {
             testPath.mkdirs();
         }
 
-        //写入文件
-        try (OutputStream out = new FileOutputStream("/tmp/conn_wifi.sh")){
-            IOUtils.write(shell_connWifi, out, StandardCharsets.UTF_8);
-        } catch (Exception ignored) {}
-        //1. 执行这些命令尝试连接
-        CommandDaemon testRv = RaspCmdUtils.runCmdDaemon("/bin/sh /tmp/conn_wifi.sh", "conn_wifi");
-        //System.out.println(testRv.getOutStr());
+        CommandDaemon testRv = runSh(shell_connWifi, "conn_wifi");
 
         //等待连接WiFi
         try {
@@ -330,19 +349,11 @@ public class RaspWiFiUtils {
         启动dnsmasq，其中修改本机ip为192.168.10.1，并将所有dns解析到了此IP
         sudo dnsmasq.sh
         */
-        try (OutputStream out = new FileOutputStream("/tmp/hostapd.sh")){
-            IOUtils.write(String.format(shell_hostapd, ssid), out, StandardCharsets.UTF_8);
-        } catch (Exception ignored) {}
-        CommandDaemon rv_hostapd = RaspCmdUtils.runCmdDaemon("/bin/sh /tmp/hostapd.sh", "hostapd");
+        CommandDaemon rv_hostapd = runSh(String.format(shell_hostapd, ssid), "hostapd");
         //System.out.println("hostapd >>" + rv.getOutStr());
 
-
-        //写入文件
-        try (OutputStream out = new FileOutputStream("/tmp/dnsmasq.sh")){
-            IOUtils.write(shell_dnsmasq, out, StandardCharsets.UTF_8);
-        } catch (Exception ignored) {}
-        //并执行
-        CommandDaemon rv_dnsmasq = RaspCmdUtils.runCmdDaemon("/bin/sh /tmp/dnsmasq.sh", "dnsmasq");
+        //执行dns
+        CommandDaemon rv_dnsmasq = runSh(shell_dnsmasq, "dnsmasq");
         //System.out.println("dnsmasq >>" + rv.getOutStr());
         try {
             Thread.sleep(5000);
@@ -359,6 +370,17 @@ public class RaspWiFiUtils {
             sb.append(tmp.charAt(random.nextInt(tmp.length())));
         }
         return sb.toString();
+    }
+
+    private static CommandDaemon runSh(String bashShell, String name) {
+        //写入文件
+        try (OutputStream out = new FileOutputStream("/tmp/" + name + ".sh")){
+            IOUtils.write(bashShell, out, StandardCharsets.UTF_8);
+        } catch (Exception ignored) {}
+        //执行这些命令尝试连接
+        CommandDaemon testRv = RaspCmdUtils.runCmdDaemon("/bin/sh /tmp/" + name + ".sh", name);
+        //System.out.println(testRv.getOutStr());
+        return testRv;
     }
 
 }
