@@ -1,0 +1,113 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+    <title></title>
+    <link rel="stylesheet" href="/css/weui-2.1.2.min.css">
+    <script type="text/javascript" src="/js/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="/js/weui-v1.2.1.min.js"></script>
+</head>
+<body>
+<div class="container">
+    <div class="weui-form">
+        <div class="weui-form__text-area">
+            <h2 class="weui-form__title">欢迎使用</h2>
+            <div class="weui-form__desc" style="font-size: 13px;">智开学院~智能硬件V1.0</div>
+            <div class="weui-form__desc">设备已初始化，请填写下方的配置信息后重启，即可正常使用。</div>
+        </div>
+        <div class="weui-form__control-area">
+            <div class="weui-cells__group weui-cells__group_form">
+                <div class="weui-cells__title">请填写配置信息：</div>
+                <div class="weui-cells weui-cells_form">
+                    <form id="form" onsubmit="return false;">
+                        <input type="hidden" name="reboot" value="false">
+                        <div class="weui-cell weui-cell_select weui-cell_select-after">
+                            <div class="weui-cell__hd">
+                                <label class="weui-label">WiFi热点</label>
+                            </div>
+                            <div class="weui-cell__bd">
+                                <select class="weui-select" name="wifi_ssid" id="wifi_ssid_div"></select>
+                            </div>
+                        </div>
+                        <div class="weui-cell">
+                            <div class="weui-cell__hd"><label class="weui-label">WiFi密码</label></div>
+                            <div class="weui-cell__bd">
+                                <input class="weui-input" name="wifi_pw" placeholder="填写WiFi的密码">
+                            </div>
+                        </div>
+                        <div class="weui-cell">
+                            <div class="weui-cell__hd"><label class="weui-label">作业服务器</label></div>
+                            <div class="weui-cell__bd">
+                                <input class="weui-input" name="workServer" type="text" placeholder="请填写智开学院的作业服务器地址" value="10.189.15.230">
+                            </div>
+                        </div>
+                        <div class="weui-cell">
+                            <div class="weui-cell__hd"><label class="weui-label">作业端口</label></div>
+                            <div class="weui-cell__bd">
+                                <input class="weui-input" name="workPort" type="text" placeholder="请填写智开学院的作业服务器端口" value="5000">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div style="margin-top: 20px;">
+                <div onclick="submitConfig(false)" class="weui-btn weui-btn_primary">仅保存</div>
+                <div onclick="submitConfig(true)" class="weui-btn weui-btn_primary">保存且应用</div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+<script>
+    $(function () {
+        setInterval(reloadWifiList, 20 * 1000);
+        reloadWifiList();
+    });
+    function reloadWifiList() {
+        var wifi_ssid_div = $("#wifi_ssid_div");
+        var val = wifi_ssid_div.val();
+        $.post("/config/wifi_scan", {}, function (data) {
+            if (data && data.ok) {
+                wifi_ssid_div.html('');
+                $.each(data.data, function (i, e) {
+                    wifi_ssid_div.append(`<option value="${e.name}">${e.name}（${e.signal}）</option>`);
+                });
+                wifi_ssid_div.find(`[value=${val}]`).prop('selected', true);
+            } else {
+                alertMessage(data.msg);
+            }
+        }).error(errorAlert);
+    }
+    function errorAlert() {
+        weui.topTips('链接服务器失败，请检查网络状态！', 3000);
+    }
+
+    function alertMessage(msg, func) {
+        weui.toast(msg, {duration: 3000, callback: function(){ if (typeof func === 'function'){func();} }} );
+    }
+
+    function submitConfig(reboot) {
+        var loading = weui.loading('loading');
+        var form = $("#form");
+        form.find('[name=reboot]').val(reboot);
+        $.post("/config/submit", form.serialize(), function (data) {
+            loading.hide(function () {
+                if (data) {
+                    alertMessage(data.msg, function () {
+                        if (data.code === 1 && !reboot) {
+                            location.reload();
+                        }
+                    })
+                } else {
+                    errorAlert();
+                }
+            });
+        }).error(function () {
+            loading.hide(errorAlert);
+        });
+    }
+</script>
+</html>
