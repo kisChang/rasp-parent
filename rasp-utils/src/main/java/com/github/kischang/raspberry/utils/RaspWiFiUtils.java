@@ -53,7 +53,7 @@ public class RaspWiFiUtils {
      * 命令：
         sudo ifconfig wlan0 up //启动
         WPADRV=$(cat /etc/sysconfig/wifi-wpadrv)
-        wpa_passphrase cpvs 'cpvs@2017' > /home/tc/wpa_supplicant.conf // 生成配置文件
+        wpa_passphrase wifiap '1234567' > /home/tc/wpa_supplicant.conf // 生成配置文件
         sudo wpa_supplicant -B -i wlan0 -c /home/tc/wpa_supplicant.conf -D $WPADRV //启动 -B 是后台运行
 
         ------dhcpcd 方案 （现用）
@@ -117,7 +117,7 @@ public class RaspWiFiUtils {
     }
 
     public static void main(String[] args) {
-        connWiFi("cpvs", "cpvs@2017");
+        connWiFi("wifiap", "12345678");
     }
 
     public static boolean testNetwork(String server) {
@@ -140,124 +140,6 @@ public class RaspWiFiUtils {
      */
     public static List<WiFiInfo> scanWiFi() {
         String content = RaspCmdUtils.runCmdOnce("iwlist wlan0 scanning");
-		/*String content =
-            "          Cell 07 - Address: EC:6C:9F:09:2E:1A\n" +
-            "                    Channel:8\n" +
-            "                    Frequency:2.447 GHz (Channel 8)\n" +
-            "                    Quality=37/70  Signal level=-73 dBm  \n" +
-            "                    Encryption key:on\n" +
-            "                    ESSID:\"Volans_2E1A\"\n" +
-            "                    Bit Rates:1 Mb/s; 2 Mb/s; 5.5 Mb/s; 11 Mb/s; 9 Mb/s\n" +
-            "                              18 Mb/s; 36 Mb/s; 54 Mb/s\n" +
-            "                    Bit Rates:6 Mb/s; 12 Mb/s; 24 Mb/s; 48 Mb/s\n" +
-            "                    Mode:Master\n" +
-            "                    Extra:tsf=0000000000000000\n" +
-            "                    Extra: Last beacon: 70ms ago\n" +
-            "                    IE: Unknown: 000B566F6C616E735F32453141\n" +
-            "                    IE: Unknown: 010882848B961224486C\n" +
-            "                    IE: Unknown: 030108\n" +
-            "                    IE: Unknown: 2A0104\n" +
-            "                    IE: Unknown: 32040C183060\n" +
-            "                    IE: Unknown: 2D1AEE1117FFFF0000010000000000000000000000000C0000000000\n" +
-            "                    IE: Unknown: 3D1608050600000000000000000000000000000000000000\n" +
-            "                    IE: Unknown: 3E0100\n" +
-            "                    IE: IEEE 802.11i/WPA2 Version 1\n" +
-            "                        Group Cipher : CCMP\n" +
-            "                        Pairwise Ciphers (1) : CCMP\n" +
-            "                        Authentication Suites (1) : PSK\n" +
-            "                    IE: Unknown: DD180050F2020101000003A4000027A4000042435E0062322F00\n" +
-            "                    IE: Unknown: 0B0501001F127A\n" +
-            "                    IE: Unknown: 7F0101\n" +
-            "                    IE: Unknown: DD07000C4307000000\n" +
-            "                    IE: Unknown: 0706434E20010D10\n" +
-            "                    IE: Unknown: DD1E00904C33EE1117FFFF0000010000000000000000000000000C0000000000\n" +
-            "                    IE: Unknown: DD1A00904C3408050600000000000000000000000000000000000000\n" +
-            "          Cell 08 - Address: 8C:A6:DF:50:72:9D\n" +
-            "                    Channel:11\n" +
-            "                    Frequency:2.462 GHz (Channel 11)\n" +
-            "                    Quality=37/70  Signal level=-73 dBm  \n" +
-            "                    Encryption key:on\n" +
-            "                    ESSID:\"8160\"\n" +
-            "                    Bit Rates:1 Mb/s; 2 Mb/s; 5.5 Mb/s; 11 Mb/s; 6 Mb/s\n" +
-            "                              9 Mb/s; 12 Mb/s; 18 Mb/s\n" +
-            "                    Bit Rates:24 Mb/s; 36 Mb/s; 48 Mb/s; 54 Mb/s\n" +
-            "                    Mode:Master\n" +
-            "                    Extra:tsf=0000000000000000\n" +
-            "                    Extra: Last beacon: 70ms ago\n" +
-            "                    IE: Unknown: 000438313630\n" +
-            "                    IE: Unknown: 010882848B960C121824\n" +
-            "                    IE: Unknown: 03010B\n" +
-            "                    IE: Unknown: 2A0100\n" +
-            "                    IE: IEEE 802.11i/WPA2 Version 1\n" +
-            "                        Group Cipher : CCMP\n" +
-            "                        Pairwise Ciphers (1) : CCMP\n" +
-            "                        Authentication Suites (1) : PSK\n" +
-            "                    IE: Unknown: 32043048606C\n" +
-            "                    IE: Unknown: 2D1AEE111BFFFFFF0000000000000000000100000000000000000000\n" +
-            "                    IE: Unknown: 3D160B0F0000000000000000000000000000000000000000\n" +
-            "                    IE: Unknown: 7F080000000000000040\n" +
-            "                    IE: WPA Version 1\n" +
-            "                        Group Cipher : CCMP\n" +
-            "                        Pairwise Ciphers (1) : CCMP\n" +
-            "                        Authentication Suites (1) : PSK\n" +
-            "                    IE: Unknown: DD180050F2020101800003A4000027A4000042435E0062322F00\n" +
-            "                    IE: Unknown: DD0900037F01010000FF7F\n" +
-            "          Cell 09 - Address: BC:46:99:A6:F4:66\n" +
-            "                    Channel:11\n" +
-            "                    Frequency:2.462 GHz (Channel 11)\n" +
-            "                    Quality=30/70  Signal level=-80 dBm  \n" +
-            "                    Encryption key:on\n" +
-            "                    ESSID:\"TB-SmartFarm-1\"\n" +
-            "                    Bit Rates:1 Mb/s; 2 Mb/s; 5.5 Mb/s; 11 Mb/s; 6 Mb/s\n" +
-            "                              9 Mb/s; 12 Mb/s; 18 Mb/s\n" +
-            "                    Bit Rates:24 Mb/s; 36 Mb/s; 48 Mb/s; 54 Mb/s\n" +
-            "                    Mode:Master\n" +
-            "                    Extra:tsf=0000000000000000\n" +
-            "                    Extra: Last beacon: 70ms ago\n" +
-            "                    IE: Unknown: 000E54422D536D6172744661726D2D31\n" +
-            "                    IE: Unknown: 010882848B960C121824\n" +
-            "                    IE: Unknown: 03010B\n" +
-            "                    IE: Unknown: 2A0100\n" +
-            "                    IE: Unknown: 32043048606C\n" +
-            "                    IE: Unknown: 2D1A6E1003FFFF000000000000000000000000000000000000000000\n" +
-            "                    IE: Unknown: 3D160B070200000000000000000000000000000000000000\n" +
-            "                    IE: IEEE 802.11i/WPA2 Version 1\n" +
-            "                        Group Cipher : CCMP\n" +
-            "                        Pairwise Ciphers (1) : CCMP\n" +
-            "                        Authentication Suites (1) : PSK\n" +
-            "                    IE: WPA Version 1\n" +
-            "                        Group Cipher : CCMP\n" +
-            "                        Pairwise Ciphers (1) : CCMP\n" +
-            "                        Authentication Suites (1) : PSK\n" +
-            "                    IE: Unknown: DD180050F2020101000003A4000027A4000042435E0062322F00\n" +
-            "                    IE: Unknown: DD05000AEB0100\n" +
-            "          Cell 10 - Address: 0C:DA:41:EC:7F:F0\n" +
-            "                    Channel:11\n" +
-            "                    Frequency:2.462 GHz (Channel 11)\n" +
-            "                    Quality=38/70  Signal level=-72 dBm  \n" +
-            "                    Encryption key:on\n" +
-            "                    ESSID:\"cpvs\"\n" +
-            "                    Bit Rates:1 Mb/s; 2 Mb/s; 5.5 Mb/s; 6 Mb/s; 9 Mb/s\n" +
-            "                              11 Mb/s; 12 Mb/s; 18 Mb/s\n" +
-            "                    Bit Rates:24 Mb/s; 36 Mb/s; 48 Mb/s; 54 Mb/s\n" +
-            "                    Mode:Master\n" +
-            "                    Extra:tsf=0000000000000000\n" +
-            "                    Extra: Last beacon: 70ms ago\n" +
-            "                    IE: Unknown: 000463707673\n" +
-            "                    IE: Unknown: 010882848B0C12961824\n" +
-            "                    IE: Unknown: 03010B\n" +
-            "                    IE: Unknown: 0706434E49010D14\n" +
-            "                    IE: Unknown: 2A0100\n" +
-            "                    IE: IEEE 802.11i/WPA2 Version 1\n" +
-            "                        Group Cipher : CCMP\n" +
-            "                        Pairwise Ciphers (1) : CCMP\n" +
-            "                        Authentication Suites (1) : PSK\n" +
-            "                    IE: Unknown: 32043048606C\n" +
-            "                    IE: Unknown: 2D1AED1103FFFF000000000000000000000000000000000000000000\n" +
-            "                    IE: Unknown: 3D160B080400000000000000000000000000000000000000\n" +
-            "                    IE: Unknown: DD180050F2020101810003A4000027A4000042435E0062322F00\n" +
-            "                    IE: Unknown: DD1E00904C33ED1103FFFF000000000000000000000000000000000000000000\n" +
-            "                    IE: Unknown: DD1A00904C340B080400000000000000000000000000000000000000";*/
         return RaspWiFiUtils.parseContent(content);
     }
 
