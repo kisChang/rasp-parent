@@ -29,3 +29,5 @@ Thumbs.db
 
 # other
 rebel.xml
+.flattened-pom.xml
+*/.flattened-pom.xml
