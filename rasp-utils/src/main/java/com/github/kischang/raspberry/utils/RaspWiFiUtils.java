@@ -207,6 +207,8 @@ public class RaspWiFiUtils {
             "#!/bin/sh\n" +
             "# re-up wlan0\n" +
             "cleanup() {\n" +
+            "      /etc/init.d/wpa_supplicant stop\n" +
+            "      ps aux | grep wpa_supplicant | awk '{print $2}' | xargs kill -9\n" +
             "      ifconfig wlan0 down 2>/dev/null\n" +
             "      for k in $(ps | awk '/wlan0/{print $1}'); do kill ${k} 2>/dev/null; done\n" +
             "}\n" +
@@ -218,6 +220,7 @@ public class RaspWiFiUtils {
             "\n" +
             "# create hostapd.conf\n" +
             "echo \"interface=wlan0\n" +
+            "country_code=CN\n" +
             "driver=nl80211\n" +
             "ssid=%s\n" +
             "channel=7\" >/tmp/hostapd.conf\n" +
