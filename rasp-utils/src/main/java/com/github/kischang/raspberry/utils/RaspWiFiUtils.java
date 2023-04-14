@@ -32,8 +32,8 @@ public class RaspWiFiUtils {
         String shell_connWifi = String.format(
                 "#!/bin/sh\n" +
                 // 强行结束部分进程，确保后续重启没有问题
-                "ps aux | grep wpa_supplicant | awk '{print $2}' | xargs kill -9 \n" +
-                "ps aux | grep udhcpc.wlan0 | awk '{print $2}' | xargs kill -9 \n" +
+                "kill -9 $(ps aux | grep wpa_supplicant | awk '{print $2}') || true \n" +
+                "kill -9 $(ps aux | grep udhcpc.wlan0 | awk '{print $2}') || true \n" +
                 // 写入配置文件
                 "wpa_passphrase %s '%s' > %s\n" +
                 "rm -rf /var/run/udhcpc.wlan0.pid \n" +
@@ -73,8 +73,8 @@ public class RaspWiFiUtils {
     public static boolean connWiFi(String ssid, String key, String devName, String path) {
             String shell_connWifi = String.format(
                 "#!/bin/sh\n" +
-                "ps aux | grep wpa_supplicant | awk '{print $1}' | xargs kill -9 \n" +
-                "ps aux | grep udhcpc | awk '{print $1}' | xargs kill -9 \n" +
+                "kill -9 $(ps aux | grep wpa_supplicant | awk '{print $1}') || true \n" +
+                "kill -9 $(ps aux | grep udhcpc | awk '{print $1}') || true \n" +
                 "ifconfig %s down\n" +
                 "sleep 2s \n" +
                 "ifconfig %s up\n" +
@@ -83,7 +83,7 @@ public class RaspWiFiUtils {
                 "wpa_supplicant -B -i wlan0 -c %s/wpa_supplicant.conf -D ${WPADRV} \n" +
                 "sleep 2s \n" + //等一下
                 "if [ -f /var/run/udhcpc.wlan0.pid ]; then \n" +
-                "  cat /var/run/udhcpc.wlan0.pid | xargs kill -9 \n" +
+                "  kill -9 $(cat /var/run/udhcpc.wlan0.pid) || true\n" +
                 "fi \n" +
                 "rm -rf /var/run/udhcpc.wlan0.pid \n" +
                 "HOST_NAME=$(hostname) \n" +
@@ -206,8 +206,8 @@ public class RaspWiFiUtils {
             "#!/bin/sh\n" +
             "# re-up wlan0\n" +
             "cleanup() {\n" +
-            "      /etc/init.d/wpa_supplicant stop\n" +
-            "      ps aux | grep wpa_supplicant | awk '{print $2}' | xargs kill -9\n" +
+            "      /etc/init.d/wpa_supplicant stop || true\n" +
+            "      kill -9 $(ps aux | grep wpa_supplicant | awk '{print $2}' ) || true\n" +
             "      ifconfig wlan0 down 2>/dev/null\n" +
             "      for k in $(ps | awk '/wlan0/{print $1}'); do kill ${k} 2>/dev/null; done\n" +
             "}\n" +
