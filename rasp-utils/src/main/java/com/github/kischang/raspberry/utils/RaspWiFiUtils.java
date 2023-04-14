@@ -208,6 +208,8 @@ public class RaspWiFiUtils {
             "#!/bin/sh\n" +
             "# re-up wlan0\n" +
             "cleanup() {\n" +
+            "      kill -9 $(ps aux | grep conn_wifi.sh | awk '{print $2}' ) || true\n" +
+            "      kill -9 $(ps aux | grep conn_wifi_sys.sh | awk '{print $2}' ) || true\n" +
             "      /etc/init.d/wpa_supplicant stop || true\n" +
             "      kill -9 $(ps aux | grep hostapd | awk '{print $2}' ) || true\n" +
             "      kill -9 $(ps aux | grep wpa_supplicant | awk '{print $2}' ) || true\n" +
