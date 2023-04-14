@@ -23,10 +23,10 @@ public class RaspWiFiUtils {
 
     static String shell_clearup =
             "#!/bin/sh\n" +
-            "kill -9 $(ps aux | grep kis_host.apd.sh | grep -v grep | awk '{print $2}' ) || true\n" +
-            "kill -9 $(ps aux | grep kis_dns.masq.sh | grep -v grep | awk '{print $2}' ) || true\n" +
-            "kill -9 $(ps aux | grep kis_conn_wifi.sh | grep -v grep | awk '{print $2}' ) || true\n" +
-            "kill -9 $(ps aux | grep kis_conn_wifi_sys.sh | grep -v grep | awk '{print $2}' ) || true\n" +
+            "kill -9 $(ps aux | grep kis.host_apd.sh | grep -v grep | awk '{print $2}' ) || true\n" +
+            "kill -9 $(ps aux | grep kis.dns_masq.sh | grep -v grep | awk '{print $2}' ) || true\n" +
+            "kill -9 $(ps aux | grep kis.conn_wifi.sh | grep -v grep | awk '{print $2}' ) || true\n" +
+            "kill -9 $(ps aux | grep kis.conn_wifi_sys.sh | grep -v grep | awk '{print $2}' ) || true\n" +
             "";
 
     /**
@@ -51,7 +51,7 @@ public class RaspWiFiUtils {
                 "rc-service avahi-daemon restart \n"
                 , ssid, key, wpa_supplicantConfPath);
 
-        CommandDaemon testRv = runSh(shell_connWifi, "kis_conn_wifi_sys");
+        CommandDaemon testRv = runSh(shell_connWifi, "kis.conn_wifi_sys");
         return true;
     }
 
@@ -107,7 +107,7 @@ public class RaspWiFiUtils {
             testPath.mkdirs();
         }
 
-        CommandDaemon testRv = runSh(shell_connWifi, "kis_conn_wifi");
+        CommandDaemon testRv = runSh(shell_connWifi, "kis.conn_wifi");
 
         //等待连接WiFi
         try {
@@ -249,11 +249,11 @@ public class RaspWiFiUtils {
         启动dnsmasq，其中修改本机ip为192.168.10.1，并将所有dns解析到了此IP
         sudo dnsmasq.sh
         */
-        CommandDaemon rv_hostapd = runSh(String.format(shell_hostapd, ssid), "kis_host.apd");
+        CommandDaemon rv_hostapd = runSh(String.format(shell_hostapd, ssid), "kis.host_apd");
         //System.out.println("hostapd >>" + rv.getOutStr());
 
         //执行dns
-        CommandDaemon rv_dnsmasq = runSh(shell_dnsmasq, "kis_dns.masq");
+        CommandDaemon rv_dnsmasq = runSh(shell_dnsmasq, "kis.dns_masq");
         //System.out.println("dnsmasq >>" + rv.getOutStr());
         try {
             Thread.sleep(5000);
