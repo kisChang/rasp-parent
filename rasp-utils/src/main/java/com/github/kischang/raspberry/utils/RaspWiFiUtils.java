@@ -21,6 +21,14 @@ import java.util.Random;
  */
 public class RaspWiFiUtils {
 
+    static String shell_clearup =
+            "#!/bin/sh\n" +
+            "kill -9 $(ps aux | grep kis_host.apd.sh | grep -v grep | awk '{print $2}' ) || true\n" +
+            "kill -9 $(ps aux | grep kis_dns.masq.sh | grep -v grep | awk '{print $2}' ) || true\n" +
+            "kill -9 $(ps aux | grep kis_conn_wifi.sh | grep -v grep | awk '{print $2}' ) || true\n" +
+            "kill -9 $(ps aux | grep kis_conn_wifi_sys.sh | grep -v grep | awk '{print $2}' ) || true\n" +
+            "";
+
     /**
      * 按系统配置文件写入并重启服务
      * @param ssid  wifi ssid
@@ -29,11 +37,10 @@ public class RaspWiFiUtils {
      * @return
      */
     public static boolean connWiFiBySys(String ssid, String key, String wpa_supplicantConfPath) {
+        runSh(shell_clearup, "shell_clearup");
         String shell_connWifi = String.format(
                 "#!/bin/sh\n" +
                 // 强行结束部分进程，确保后续重启没有问题
-                "kill -9 $(ps aux | grep kis_host.apd.sh | grep -v grep | awk '{print $2}' ) || true \n" +
-                "kill -9 $(ps aux | grep kis_dns.masq.sh | grep -v grep | awk '{print $2}' ) || true \n" +
                 "killall wpa_supplicant || true \n" +
                 "killall udhcpc || true \n" +
                 // 写入配置文件
@@ -44,7 +51,7 @@ public class RaspWiFiUtils {
                 "rc-service avahi-daemon restart \n"
                 , ssid, key, wpa_supplicantConfPath);
 
-        CommandDaemon testRv = runSh(shell_connWifi, "conn_wifi_sys");
+        CommandDaemon testRv = runSh(shell_connWifi, "kis_conn_wifi_sys");
         return true;
     }
 
@@ -73,35 +80,34 @@ public class RaspWiFiUtils {
      * @return true连接成功，false连接失败
      */
     public static boolean connWiFi(String ssid, String key, String devName, String path) {
-            String shell_connWifi = String.format(
-                "#!/bin/sh\n" +
-                "kill -9 $(ps aux | grep kis_host.apd.sh | grep -v grep | awk '{print $2}' ) || true \n" +
-                "kill -9 $(ps aux | grep kis_dns.masq.sh | grep -v grep | awk '{print $2}' ) || true \n" +
-                "kill -9 $(ps aux | grep wpa_supplicant | grep -v grep | awk '{print $2}') || true \n" +
-                "kill -9 $(ps aux | grep udhcpc.wlan0 | grep -v grep | awk '{print $2}') || true \n" +
-                "ifconfig %s down\n" +
-                "sleep 2s \n" +
-                "ifconfig %s up\n" +
-                "WPADRV=nl80211\n" +
-                "wpa_passphrase %s '%s' > %s/wpa_supplicant.conf\n" +
-                "wpa_supplicant -B -i wlan0 -c %s/wpa_supplicant.conf -D ${WPADRV} \n" +
-                "sleep 2s \n" + //等一下
-                "if [ -f /var/run/udhcpc.wlan0.pid ]; then \n" +
-                "  kill -9 $(cat /var/run/udhcpc.wlan0.pid) || true\n" +
-                "fi \n" +
-                "rm -rf /var/run/udhcpc.wlan0.pid \n" +
-                "HOST_NAME=$(hostname) \n" +
-                "udhcpc -b -R -p -p /var/run/udhcpc.wlan0.pid -i %s -x hostname:${HOST_NAME} \n" +
-                "rc-service avahi-daemon restart \n"
+        runSh(shell_clearup, "shell_clearup");
+        String shell_connWifi = String.format(
+            "#!/bin/sh\n" +
+            "kill -9 $(ps aux | grep wpa_supplicant | grep -v grep | awk '{print $2}') || true \n" +
+            "kill -9 $(ps aux | grep udhcpc.wlan0 | grep -v grep | awk '{print $2}') || true \n" +
+            "ifconfig %s down\n" +
+            "sleep 2s \n" +
+            "ifconfig %s up\n" +
+            "WPADRV=nl80211\n" +
+            "wpa_passphrase %s '%s' > %s/wpa_supplicant.conf\n" +
+            "wpa_supplicant -B -i wlan0 -c %s/wpa_supplicant.conf -D ${WPADRV} \n" +
+            "sleep 2s \n" + //等一下
+            "if [ -f /var/run/udhcpc.wlan0.pid ]; then \n" +
+            "  kill -9 $(cat /var/run/udhcpc.wlan0.pid) || true\n" +
+            "fi \n" +
+            "rm -rf /var/run/udhcpc.wlan0.pid \n" +
+            "HOST_NAME=$(hostname) \n" +
+            "udhcpc -b -R -p -p /var/run/udhcpc.wlan0.pid -i %s -x hostname:${HOST_NAME} \n" +
+            "rc-service avahi-daemon restart \n"
 //                "udhcpc -n -i %s -x hostname ${HOST_NAME} -p /var/run/udhcpc.wlan0.pid \n"
-                , devName, devName, ssid, key, path, path, devName);
+            , devName, devName, ssid, key, path, path, devName);
 
         File testPath = new File(path);
         if (!testPath.exists()) {
             testPath.mkdirs();
         }
 
-        CommandDaemon testRv = runSh(shell_connWifi, "conn_wifi");
+        CommandDaemon testRv = runSh(shell_connWifi, "kis_conn_wifi");
 
         //等待连接WiFi
         try {
@@ -212,8 +218,6 @@ public class RaspWiFiUtils {
             "#!/bin/sh\n" +
             "# re-up wlan0\n" +
             "cleanup() {\n" +
-            "      kill -9 $(ps aux | grep conn_wifi.sh | grep -v grep | awk '{print $2}' ) || true\n" +
-            "      kill -9 $(ps aux | grep conn_wifi_sys.sh | grep -v grep | awk '{print $2}' ) || true\n" +
             "      /etc/init.d/wpa_supplicant stop || true\n" +
             "      killall hostapd || true\n" +
             "      killall wpa_supplicant || true\n" +
@@ -237,6 +241,7 @@ public class RaspWiFiUtils {
             "hostapd /tmp/hostapd.conf"
             ;
     public static void startApMode(String ssid) {
+        runSh(shell_clearup, "shell_clearup");
         /*
         启动热点，SSID： ZK_FB_ABCD  pwd：开放
         sudo hostapd hostapd.conf
