@@ -179,6 +179,8 @@ public class RaspWiFiUtils {
     public static final String shell_dnsmasq =
             "#!/bin/sh\n" +
             "\n" +
+            "kill -9 $(ps aux | grep dnsmasq | awk '{print $2}' ) || true\n" +
+            "\n" +
             "# user variables\n" +
             "lan_if=wlan0\n" +
             "ip_stem=192.168.10\n" +
@@ -206,7 +208,9 @@ public class RaspWiFiUtils {
             "#!/bin/sh\n" +
             "# re-up wlan0\n" +
             "cleanup() {\n" +
+            "      rc-service networking stop\n" +
             "      /etc/init.d/wpa_supplicant stop || true\n" +
+            "      kill -9 $(ps aux | grep hostapd | awk '{print $2}' ) || true\n" +
             "      kill -9 $(ps aux | grep wpa_supplicant | awk '{print $2}' ) || true\n" +
             "      ifconfig wlan0 down 2>/dev/null\n" +
             "      for k in $(ps | awk '/wlan0/{print $1}'); do kill ${k} 2>/dev/null; done\n" +
