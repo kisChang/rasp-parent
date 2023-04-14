@@ -21,13 +21,12 @@ import java.util.Random;
  */
 public class RaspWiFiUtils {
 
-    static String shell_clearup =
-            "#!/bin/sh\n" +
-            "kill -9 $(ps aux | grep kis.host_apd.sh | grep -v grep | awk '{print $2}' ) || true\n" +
-            "kill -9 $(ps aux | grep kis.dns_masq.sh | grep -v grep | awk '{print $2}' ) || true\n" +
-            "kill -9 $(ps aux | grep kis.conn_wifi.sh | grep -v grep | awk '{print $2}' ) || true\n" +
-            "kill -9 $(ps aux | grep kis.conn_wifi_sys.sh | grep -v grep | awk '{print $2}' ) || true\n" +
-            "";
+    private static void runClearUp() {
+        RaspCmdUtils.runCmdOnce("kill -9 $(ps aux | grep kis.host_apd.sh | grep -v grep | awk '{print $2}' )");
+        RaspCmdUtils.runCmdOnce("kill -9 $(ps aux | grep kis.dns_masq.sh | grep -v grep | awk '{print $2}' )");
+        RaspCmdUtils.runCmdOnce("kill -9 $(ps aux | grep kis.conn_wifi.sh | grep -v grep | awk '{print $2}' )");
+        RaspCmdUtils.runCmdOnce("kill -9 $(ps aux | grep kis.conn_wifi_sys.sh | grep -v grep | awk '{print $2}' )");
+    }
 
     /**
      * 按系统配置文件写入并重启服务
@@ -37,7 +36,7 @@ public class RaspWiFiUtils {
      * @return
      */
     public static boolean connWiFiBySys(String ssid, String key, String wpa_supplicantConfPath) {
-        runSh(shell_clearup, "shell_clearup");
+        runClearUp();
         String shell_connWifi = String.format(
                 "#!/bin/sh\n" +
                 // 强行结束部分进程，确保后续重启没有问题
@@ -80,7 +79,7 @@ public class RaspWiFiUtils {
      * @return true连接成功，false连接失败
      */
     public static boolean connWiFi(String ssid, String key, String devName, String path) {
-        runSh(shell_clearup, "shell_clearup");
+        runClearUp();
         String shell_connWifi = String.format(
             "#!/bin/sh\n" +
             "kill -9 $(ps aux | grep wpa_supplicant | grep -v grep | awk '{print $2}') || true \n" +
@@ -241,7 +240,7 @@ public class RaspWiFiUtils {
             "hostapd /tmp/hostapd.conf"
             ;
     public static void startApMode(String ssid) {
-        runSh(shell_clearup, "shell_clearup");
+        runClearUp();
         /*
         启动热点，SSID： ZK_FB_ABCD  pwd：开放
         sudo hostapd hostapd.conf

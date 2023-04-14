@@ -20,7 +20,7 @@
     </modules>
 
     <properties>
-        <revision>0.0.15</revision>
+        <revision>0.0.16</revision>
         <pi4j.version>1.4</pi4j.version>
 
         <java.version>11</java.version>
