@@ -32,11 +32,10 @@ public class RaspWiFiUtils {
         String shell_connWifi = String.format(
                 "#!/bin/sh\n" +
                 // 强行结束部分进程，确保后续重启没有问题
-                "ps aux | grep wpa_supplicant | awk '{print $1}' | xargs kill -9 \n" +
-                "ps aux | grep udhcpc | awk '{print $1}' | xargs kill -9 \n" +
+                "ps aux | grep wpa_supplicant | awk '{print $2}' | xargs kill -9 \n" +
+                "ps aux | grep udhcpc.wlan0 | awk '{print $2}' | xargs kill -9 \n" +
                 // 写入配置文件
                 "wpa_passphrase %s '%s' > %s\n" +
-                "rm -rf /var/run/udhcpc.eth0.pid \n" +
                 "rm -rf /var/run/udhcpc.wlan0.pid \n" +
                 // 重启
                 "rc-service networking restart \n" +
