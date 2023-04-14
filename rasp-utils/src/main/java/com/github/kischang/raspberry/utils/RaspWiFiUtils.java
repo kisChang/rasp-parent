@@ -238,11 +238,11 @@ public class RaspWiFiUtils {
         启动dnsmasq，其中修改本机ip为192.168.10.1，并将所有dns解析到了此IP
         sudo dnsmasq.sh
         */
-        CommandDaemon rv_hostapd = runSh(String.format(shell_hostapd, ssid), "hostapd");
+        CommandDaemon rv_hostapd = runSh(String.format(shell_hostapd, ssid), "kis_host.apd");
         //System.out.println("hostapd >>" + rv.getOutStr());
 
         //执行dns
-        CommandDaemon rv_dnsmasq = runSh(shell_dnsmasq, "dnsmasq");
+        CommandDaemon rv_dnsmasq = runSh(shell_dnsmasq, "kis_dns.masq");
         //System.out.println("dnsmasq >>" + rv.getOutStr());
         try {
             Thread.sleep(5000);
