@@ -32,8 +32,8 @@ public class RaspWiFiUtils {
         String shell_connWifi = String.format(
                 "#!/bin/sh\n" +
                 // 强行结束部分进程，确保后续重启没有问题
-                "kill -9 $(ps aux | grep wpa_supplicant | grep -v grep | awk '{print $2}') || true \n" +
-                "kill -9 $(ps aux | grep udhcpc.wlan0 | grep -v grep | awk '{print $2}') || true \n" +
+                "killall wpa_supplicant \n" +
+                "killall udhcpc \n" +
                 // 写入配置文件
                 "wpa_passphrase %s '%s' > %s\n" +
                 "rm -rf /var/run/udhcpc.wlan0.pid \n" +
@@ -74,7 +74,7 @@ public class RaspWiFiUtils {
             String shell_connWifi = String.format(
                 "#!/bin/sh\n" +
                 "kill -9 $(ps aux | grep wpa_supplicant | grep -v grep | awk '{print $2}') || true \n" +
-                "kill -9 $(ps aux | grep udhcpc | grep -v grep | awk '{print $2}') || true \n" +
+                "kill -9 $(ps aux | grep udhcpc.wlan0 | grep -v grep | awk '{print $2}') || true \n" +
                 "ifconfig %s down\n" +
                 "sleep 2s \n" +
                 "ifconfig %s up\n" +
@@ -179,7 +179,7 @@ public class RaspWiFiUtils {
     public static final String shell_dnsmasq =
             "#!/bin/sh\n" +
             "\n" +
-            "kill -9 $(ps aux | grep dnsmasq | grep -v grep | awk '{print $2}' ) || true\n" +
+            "killall dnsmasq\n" +
             "\n" +
             "# user variables\n" +
             "lan_if=wlan0\n" +
@@ -211,8 +211,8 @@ public class RaspWiFiUtils {
             "      kill -9 $(ps aux | grep conn_wifi.sh | grep -v grep | awk '{print $2}' ) || true\n" +
             "      kill -9 $(ps aux | grep conn_wifi_sys.sh | grep -v grep | awk '{print $2}' ) || true\n" +
             "      /etc/init.d/wpa_supplicant stop || true\n" +
-            "      kill -9 $(ps aux | grep hostapd | grep -v grep | awk '{print $2}' ) || true\n" +
-            "      kill -9 $(ps aux | grep wpa_supplicant | grep -v grep | awk '{print $2}' ) || true\n" +
+            "      killall hostapd\n" +
+            "      killall wpa_supplicant\n" +
             "      ifconfig wlan0 down 2>/dev/null\n" +
             "      for k in $(ps | awk '/wlan0/{print $1}'); do kill ${k} 2>/dev/null; done\n" +
             "}\n" +
