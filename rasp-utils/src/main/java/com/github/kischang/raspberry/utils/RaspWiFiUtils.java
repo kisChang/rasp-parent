@@ -21,11 +21,11 @@ import java.util.Random;
  */
 public class RaspWiFiUtils {
 
-    private static void runClearUp() {
-        RaspCmdUtils.runCmdOnce("kill -9 $(ps aux | grep kis.host_apd.sh | grep -v grep | awk '{print $2}' )");
-        RaspCmdUtils.runCmdOnce("kill -9 $(ps aux | grep kis.dns_masq.sh | grep -v grep | awk '{print $2}' )");
-        RaspCmdUtils.runCmdOnce("kill -9 $(ps aux | grep kis.conn_wifi.sh | grep -v grep | awk '{print $2}' )");
-        RaspCmdUtils.runCmdOnce("kill -9 $(ps aux | grep kis.conn_wifi_sys.sh | grep -v grep | awk '{print $2}' )");
+    public static void runClearUp() {
+        RaspCmdUtils.runCmdOnce(new String[]{"sh", "-c", "kill -9 $(ps aux | grep kis.host_apd.sh | grep -v grep | awk '{print $2}')"});
+        RaspCmdUtils.runCmdOnce(new String[]{"sh", "-c", "kill -9 $(ps aux | grep kis.dns_masq.sh | grep -v grep | awk '{print $2}')"});
+        RaspCmdUtils.runCmdOnce(new String[]{"sh", "-c", "kill -9 $(ps aux | grep kis.conn_wifi.sh | grep -v grep | awk '{print $2}')"});
+        RaspCmdUtils.runCmdOnce(new String[]{"sh", "-c", "kill -9 $(ps aux | grep kis.conn_wifi_sys.sh | grep -v grep | awk '{print $2}')"});
     }
 
     /**
@@ -122,10 +122,6 @@ public class RaspWiFiUtils {
                 , "wlan0"
                 , Paths.get(System.getProperty("user.home"), ".conf").toString()
         );
-    }
-
-    public static void main(String[] args) {
-        connWiFi("wifiap", "12345678");
     }
 
     public static boolean testNetwork(String server) {
