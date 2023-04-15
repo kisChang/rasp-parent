@@ -7,12 +7,12 @@
 <dependency>
     <groupId>com.github.kisChang.rasp-parent</groupId>
     <artifactId>rasp-device</artifactId>
-    <version>0.0.3-SNAPSHOT</version>
+    <version>0.1.0</version>
 </dependency>
 <dependency>
     <groupId>com.github.kisChang.rasp-parent</groupId>
     <artifactId>rasp-utils</artifactId>
-    <version>0.0.3-SNAPSHOT</version>
+    <version>0.1.0</version>
 </dependency>
 ```
 
@@ -21,7 +21,7 @@
 <repositories>
     <repository>
         <id>jitpack.io</id>
-        <url>https://jitpack.io</url>
+        <url>https://www.jitpack.io</url>
     </repository>
 </repositories>
 ```
