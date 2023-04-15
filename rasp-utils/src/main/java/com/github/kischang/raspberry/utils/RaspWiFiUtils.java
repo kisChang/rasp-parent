@@ -43,6 +43,10 @@ public class RaspWiFiUtils {
         runClearUp();
         String shell_connWifi = String.format(
                 "#!/bin/sh\n" +
+                // re-up wlan0
+                "ifconfig wlan0 down 2>/dev/null\n" +
+                "sleep 2s\n" +
+                "ifconfig wlan0 up\n" +
                 // 写入配置文件
                 "wpa_passphrase %s '%s' >> %s\n" +
                 // 重启网络服务
