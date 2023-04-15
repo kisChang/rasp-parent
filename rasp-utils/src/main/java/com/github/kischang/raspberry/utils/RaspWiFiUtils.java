@@ -22,10 +22,14 @@ import java.util.Random;
 public class RaspWiFiUtils {
 
     public static void runClearUp() {
-        RaspCmdUtils.runCmdOnce(new String[]{"sh", "-c", "kill -9 $(ps aux | grep kis.host_apd.sh | grep -v grep | awk '{print $2}')"});
-        RaspCmdUtils.runCmdOnce(new String[]{"sh", "-c", "kill -9 $(ps aux | grep kis.dns_masq.sh | grep -v grep | awk '{print $2}')"});
-        RaspCmdUtils.runCmdOnce(new String[]{"sh", "-c", "kill -9 $(ps aux | grep kis.conn_wifi.sh | grep -v grep | awk '{print $2}')"});
-        RaspCmdUtils.runCmdOnce(new String[]{"sh", "-c", "kill -9 $(ps aux | grep kis.conn_wifi_sys.sh | grep -v grep | awk '{print $2}')"});
+        RaspCmdUtils.runCmdOnce(new String[]{"sh", "-c", "ps aux | grep kis.host_apd.sh | grep -v grep | awk '{print $2}' | xargs -r kill -9"});
+        RaspCmdUtils.runCmdOnce(new String[]{"sh", "-c", "ps aux | grep kis.dns_masq.sh | grep -v grep | awk '{print $2}' | xargs -r kill -9"});
+        RaspCmdUtils.runCmdOnce(new String[]{"sh", "-c", "ps aux | grep kis.conn_wifi.sh | grep -v grep | awk '{print $2}' | xargs -r kill -9"});
+        RaspCmdUtils.runCmdOnce(new String[]{"sh", "-c", "ps aux | grep kis.conn_wifi_sys.sh | grep -v grep | awk '{print $2}' | xargs -r kill -9"});
+        RaspCmdUtils.runCmdOnce(new String[]{"sh", "-c", "ps aux | grep hostapd | grep -v grep | awk '{print $2}' | xargs -r kill -9"});
+        RaspCmdUtils.runCmdOnce(new String[]{"sh", "-c", "ps aux | grep dnsmasq | grep -v grep | awk '{print $2}' | xargs -r kill -9"});
+        RaspCmdUtils.runCmdOnce(new String[]{"sh", "-c", "ps aux | grep wpa_supplicant | grep -v grep | awk '{print $2}' | xargs -r kill -9"});
+        RaspCmdUtils.runCmdOnce(new String[]{"sh", "-c", "ps aux | grep udhcpc.wlan | grep -v grep | awk '{print $2}' | xargs -r kill -9"});
     }
 
     /**
@@ -39,18 +43,14 @@ public class RaspWiFiUtils {
         runClearUp();
         String shell_connWifi = String.format(
                 "#!/bin/sh\n" +
-                // 强行结束部分进程，确保后续重启没有问题
-                "killall wpa_supplicant || true \n" +
-                "killall udhcpc || true \n" +
                 // 写入配置文件
-                "wpa_passphrase %s '%s' > %s\n" +
+                "wpa_passphrase %s '%s' >> %s\n" +
+                // 重启网络服务
                 "rm -rf /var/run/udhcpc.wlan0.pid \n" +
-                // 重启
                 "rc-service networking restart \n" +
                 "rc-service avahi-daemon restart \n"
                 , ssid, key, wpa_supplicantConfPath);
-
-        CommandDaemon testRv = runSh(shell_connWifi, "kis.conn_wifi_sys");
+        runSh(shell_connWifi, "kis.conn_wifi_sys");
         return true;
     }
 
@@ -140,7 +140,6 @@ public class RaspWiFiUtils {
 
     /**
      * 扫描wifi
-     * @return
      */
     public static List<WiFiInfo> scanWiFi() {
         String content = RaspCmdUtils.runCmdOnce("iwlist wlan0 scanning");
@@ -184,16 +183,14 @@ public class RaspWiFiUtils {
     public static final String shell_dnsmasq =
             "#!/bin/sh\n" +
             "\n" +
-            "killall dnsmasq || true\n" +
-            "\n" +
-            "# user variables\n" +
+            // # user variables
             "lan_if=wlan0\n" +
             "ip_stem=192.168.10\n" +
             "\n" +
-            "# set lan_if ip address\n" +
+            // # set lan_if ip address
             "ifconfig $lan_if $ip_stem.1\n" +
             "\n" +
-            "# create dnsmasq.conf\n" +
+            // # create dnsmasq.conf
             "echo \"interface=wlan0\n" +
             "listen-address=$ip_stem.1\n" +
             "address=/*/$ip_stem.1\n" +
@@ -203,19 +200,16 @@ public class RaspWiFiUtils {
             "dhcp-option-force=option:dns-server,$ip_stem.1\n" +
             "dhcp-option-force=option:mtu,1500\n" +
             "dhcp-leasefile=/tmp/dnsmasq.leases\n" +
-            "\" >/tmp/dnsmasq.conf\n" +
+            "\" > /tmp/dnsmasq.conf\n" +
             "\n" +
-            "# start dnsmasq\n" +
+            // 启动DHCP服务
             "dnsmasq -C /tmp/dnsmasq.conf"
             ;
 
     private static final String shell_hostapd =
             "#!/bin/sh\n" +
-            "# re-up wlan0\n" +
+            // re-up wlan0
             "cleanup() {\n" +
-            "      /etc/init.d/wpa_supplicant stop || true\n" +
-            "      killall hostapd || true\n" +
-            "      killall wpa_supplicant || true\n" +
             "      ifconfig wlan0 down 2>/dev/null\n" +
             "      for k in $(ps | awk '/wlan0/{print $1}'); do kill ${k} 2>/dev/null; done\n" +
             "}\n" +
@@ -225,14 +219,14 @@ public class RaspWiFiUtils {
             "ifconfig wlan0 up\n" +
             "ifconfig wlan0 192.168.10.1\n" +
             "\n" +
-            "# create hostapd.conf\n" +
+            // create hostapd.conf
             "echo \"interface=wlan0\n" +
             "country_code=CN\n" +
             "driver=nl80211\n" +
             "ssid=%s\n" +
             "channel=7\" >/tmp/hostapd.conf\n" +
             "\n" +
-            "# start hostapd\n" +
+            // start hostapd
             "hostapd /tmp/hostapd.conf"
             ;
     public static void startApMode(String ssid) {

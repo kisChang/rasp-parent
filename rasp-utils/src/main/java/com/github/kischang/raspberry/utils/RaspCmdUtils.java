@@ -59,20 +59,22 @@ public class RaspCmdUtils {
         return runCmdOnce(cmd, null);
     }
 
-    public static String runCmdOnce(String cmd, String[] envp){
+    public static String runCmdOnce(String cmd, String[] envp) {
         try {
             Process process;
             if (cmd == null) {
                 process = Runtime.getRuntime().exec(envp);
-            }else {
+            } else {
                 if (envp == null) {
                     process = Runtime.getRuntime().exec(cmd);
-                }else {
+                } else {
                     process = Runtime.getRuntime().exec(cmd, envp);
                 }
             }
             String err = IOUtils.toString(process.getErrorStream(), StandardCharsets.UTF_8);
-            System.err.println(err);
+            if (err != null && err.length() > 0) {
+                System.err.println(err);
+            }
             return IOUtils.toString(process.getInputStream(), StandardCharsets.UTF_8);
         } catch (IOException e) {
             e.printStackTrace();
@@ -85,7 +87,7 @@ public class RaspCmdUtils {
     }
 
     public static String rmRf(String file){
-        return runCmdOnce("rm -rf " + file);
+        return runCmdOnce(new String[]{"sh", "-c", "rm -rf " + file});
     }
 
 }
